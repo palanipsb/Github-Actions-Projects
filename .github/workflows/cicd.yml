@@ -26,6 +26,9 @@ jobs:
         name: Boardgame
         path: target/*.jar
     
+    - name: install trivy
+      run: sudo apt-get update && sudo apt-get install -y trivy
+      
     - name: Trivy FS Sacn
       run: |
         trivy fs --format table -o fs.html .
