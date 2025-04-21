@@ -16,11 +16,92 @@ jobs:
         distribution: 'temurin'
         cache: maven
     - name: Build with Maven
-      run: mvn compile
+      run: mvn package
   
-  security-check:
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Trivy Fs Scan
-      run: mvn compile
+    - uses: actions/upload-artifact@4
+      with:
+        name: Boardgame
+        path: target/*.jar
+    - name: Trivy FS Sacn
+      run: |
+        trivy fs --format table -o trivy-fs-report.html
+        
+    - name: Sonarqube Scan
+      uses: sonarsource/sonar-scan-action@master
+      env:
+        SONAR_TAKEN: ${{ secrets.SONARR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+        
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+        
+    - name: SonarQube Quality Gate Check
+      id: sonarqube-quality-gate-check
+      uses: sonarsource/sonarqube-quality-gate-action@master
+      timeout-minutes: 5
+      env:
+        SONAR_TAKEN: ${{ secrets.SONARR_TOKEN }}
+        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
+    
+    - name: Setup QEMU
+      uses: dokcer/setup-qemu-action@v3
+
+    - name: Setup Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker Image
+      run: |
+        docker build -t palanipsb/boardgame:latest .
+    
+    - name: Trivy Image Sacn
+      run: |
+        trivy image --format table -o trivy-image-report.html palanipsb/boardgame:latest
+    
+    - name: Login to Docker Hub
+      uses: docker/login-action@v3
+      with:
+        username: ${{ secrets.DOCKERHUB.USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+    - name: Docker Push Image
+      run: |
+        Docker push palanipsb/boardgame:latest
+        
+    - name: Azure Login
+      uses: Azure/login@v2
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: Kubernetes Set Context
+      uses: Azure/aks-set-context@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        resource-group: rg_web-app
+        cluster-name: aks-gitactions-proj
+
+    - name: Create secret in Kubernetes cluster
+      uses: Azure/k8s-create-secret@v4.0
+      with:
+        namespace: dev
+        container-registry-url: https://index.docker.io/v1/
+        container-registry-username: ${{ secrets.DOCKERHUB.USERNAME }}
+        container-registry-password:  ${{ secrets.DOCKERHUB_TOKEN }}
+        secret-type: docker-registry
+        secret-name: docker-image-pull-secret
+
+    - name: Deploy to Kubernetes cluster
+      uses: Azure/k8-deploy@v1
+      with:
+        manifests: |
+          deployment-service.yaml
+        images: palanipsb/boardgame:latest
+        imagepullsecrets: docker-image-pull-secret
+        action: deploy
+        
+        
+        
+        
+        
+        
+        
+            
