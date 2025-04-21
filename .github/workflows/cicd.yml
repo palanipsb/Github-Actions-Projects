@@ -65,7 +65,7 @@ jobs:
       run: |
         docker build -t palanipsb/boardgame:latest .
     
-    - name: Trivy Image Sacn
+    - name: Trivy Image Sacn 
       run: |
         trivy image --format table -o trivy-image-report.html palanipsb/boardgame:latest
     
