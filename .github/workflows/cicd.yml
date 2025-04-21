@@ -44,7 +44,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
       with:
-        args: -X
+        args: -X -Dsonar.ws.timeout=60
         
     - name: Install jq
       run: sudo apt-get update && sudo apt-get install -y jq
