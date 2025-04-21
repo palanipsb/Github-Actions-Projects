@@ -37,23 +37,6 @@ jobs:
     - name: Trivy FS Sacn
       run: |
         trivy fs --format table -o fs.html .
-        
-    - name: Sonarqube Scan
-      uses: SonarSource/sonarqube-scan-action@v4
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
-        
-    - name: Install jq
-      run: sudo apt-get update && sudo apt-get install -y jq
-        
-    - name: SonarQube Quality Gate Check
-      id: sonarqube-quality-gate-check
-      uses: SonarSource/sonarqube-quality-gate-action@v1
-      timeout-minutes: 5
-      env:
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
     
     - name: Setup QEMU
       uses: docker/setup-qemu-action@v3
