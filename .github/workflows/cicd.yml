@@ -28,7 +28,7 @@ jobs:
     
     - name: Trivy FS Sacn
       run: |
-        trivy fs --format table -o trivy-fs-report.html
+        trivy fs --format table -o fs.html .
         
     - name: Sonarqube Scan
       uses: SonarSource/sonarqube-scan-action@v5
