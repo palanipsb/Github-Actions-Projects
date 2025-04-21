@@ -31,7 +31,7 @@ jobs:
         trivy fs --format table -o trivy-fs-report.html
         
     - name: Sonarqube Scan
-      uses: sonarsource/sonar-scan-action@master
+      uses: SonarSource/sonarqube-scan-action@v5
       env:
         SONAR_TAKEN: ${{ secrets.SONARR_TOKEN }}
         SONAR_HOST_URL: ${{ secrets.SONAR_HOST_URL }}
@@ -41,7 +41,7 @@ jobs:
         
     - name: SonarQube Quality Gate Check
       id: sonarqube-quality-gate-check
-      uses: sonarsource/sonarqube-quality-gate-action@master
+      uses: SonarSource/sonarqube-quality-gate-action@v1
       timeout-minutes: 5
       env:
         SONAR_TAKEN: ${{ secrets.SONARR_TOKEN }}
